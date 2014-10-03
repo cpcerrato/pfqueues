@@ -25,32 +25,32 @@ POSTCAT=/usr/sbin/postcat
 POSTSUPER=/usr/sbin/postsuper
 SPOOLDIR=/var/spool/postfix
 
-oad_deferred()
+function load_deferred()
 {
     find ${SPOOLDIR}/deferred -type f
 }
 
-load_active()
+function load_active()
 {
     find ${SPOOLDIR}/active -type f
 }
 
-load_incoming()
+function load_incoming()
 {
     find ${SPOOLDIR}/incoming -type f
 }
 
-load_inbound()
+function load_inbound()
 {
     find ${SPOOLDIR}/maildrop -type f
 }
 
-load_hold()
+function load_hold()
 {
     find ${SPOOLDIR}/hold -type f
 }
 
-load_corrupt()
+function load_corrupt()
 {
     find ${SPOOLDIR}/corrupt -type f
 }

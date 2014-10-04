@@ -79,7 +79,8 @@ function get_subject() {
 
 function get_all_subjects()
 {
-    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) $(load_corrupt) $(load_active) $(load_incoming)
+    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) $(load_corrupt) \
+          $(load_active) $(load_incoming)
     do
         for mail in $load_queues
         do
@@ -104,7 +105,8 @@ function show_header_envelop_queue() {
 function search_pattern_queue() {
     local PATTERN="$1"
     local FOUND=0
-    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) $(load_corrupt) $(load_active) $(load_incoming)
+    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) \
+          $(load_corrupt) $(load_active) $(load_incoming)
     do
         for mail in $load_queues
         do
@@ -138,8 +140,8 @@ function list_summary() {
 }
 
 function get_args() {
-    while getopts  'chldp:v:' OPCION; do
-        case "${OPCION}" in
+    while getopts  'chldp:v:' opt; do
+        case "${opt}" in
             l)
                 list_summary    
                 ;;
@@ -159,8 +161,32 @@ function get_args() {
                 exit 0
                 ;;
            h|?|*)
-                display_help
+                usage
+                exit 0
                 ;;
         esac
     done
 }
+
+function main() {
+    FAGDEL=0
+    if [ "$#" -eq 0 ]
+    then
+        usage
+        exit 0
+    fi
+    get_args "$@"
+    if [ -n ${PATTERN} ]
+    then
+        echo -e "Searching pattern \e[01;32m${PATTERN}...\e[00m"
+        search_pattern_queue "${PATTERN}"
+    fi
+    
+    if [[ -z ${PATTERN} ]] && [[ ${FLAGDEL} -eq 1 ]]
+    then
+        echo -e "Deleting \e[01;31mALL\e[00m queues..."
+        $POSTSUPER -d ALL
+    fi
+}
+
+main "$@"

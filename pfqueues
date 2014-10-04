@@ -113,7 +113,7 @@ function search_pattern_queue() {
             if [ -f $mail ]
             then
                 QUEUEID=$(get_queueid $mail)
-                read_queue  $mail|grep -qme "${PATTERN}"
+                read_queue  $mail|grep -m 1 -qe "${PATTERN}"
                 if [ $? -eq 0 ]
                 then
                     echo -e "\e[01;33m${QUEUEID}\e[00m:\e[01;32myes\e[00m"
@@ -143,13 +143,13 @@ function get_args() {
     while getopts  'chldp:v:' opt; do
         case "${opt}" in
             l)
-                list_summary    
+                list_summary
+                exit 0
                 ;;
             d)
                 FLAGDEL=1
                 ;;
             p)
-                FLAGPAT=1
                 PATTERN="${OPTARG}"
                 ;;
             c)
@@ -157,7 +157,7 @@ function get_args() {
                 exit 0
                 ;;
             v)
-                read_queue $(find_queueid_file ${OPTARG})
+                read_queue $(get_queue_file ${OPTARG})
                 exit 0
                 ;;
            h|?|*)
@@ -169,19 +169,19 @@ function get_args() {
 }
 
 function main() {
-    FAGDEL=0
+    FLAGDEL=0
     if [ "$#" -eq 0 ]
     then
         usage
         exit 0
     fi
     get_args "$@"
-    if [ -n ${PATTERN} ]
+    if [ -n "${PATTERN}" ]
     then
         echo -e "Searching pattern \e[01;32m${PATTERN}...\e[00m"
         search_pattern_queue "${PATTERN}"
     fi
-    
+
     if [[ -z ${PATTERN} ]] && [[ ${FLAGDEL} -eq 1 ]]
     then
         echo -e "Deleting \e[01;31mALL\e[00m queues..."

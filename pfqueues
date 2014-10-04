@@ -79,10 +79,54 @@ function get_subject() {
 
 function get_all_subjects()
 {
-    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) $(load_corrupt) $(load_active) $(load_incoming);do
+    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) $(load_corrupt) $(load_active) $(load_incoming)
+    do
         for mail in $load_queues
         do
-            test -f $mail && get_subject  $mail
+            test -f $mail && get_subject $mail
         done
     done
+}
+
+function count() {
+    get_all_subjects |sort|uniq -c|sort -n
+}
+
+function show_header_envelop_queue() {
+    QUEUEID=$(get_queueid $1)
+    if [ -f "$1" ];then
+        echo -e "\n---------\n\e[01;32mQUEUEID:\e[00m \e[01;33m${QUEUEID}\e[00m"
+        $POSTCAT -eh $1|grep -e "^sender:\|^Subject:\|^From:\|^To:\|^Date:"| \
+            grep --color -e "^sender:\|^Subject:\|^From:\|^To:\|^Date:"
+    fi
+}
+
+search_pattern_queue()
+{
+    local PATTERN="$1"
+    local FOUND=0
+    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) $(load_corrupt) $(load_active) $(load_incoming)
+    do
+        for mail in $load_queues
+        do
+            if [ -f $mail ]
+            then
+                QUEUEID=$(get_queueid $mail)
+                read_queue  $mail|grep -qme "${PATTERN}"
+                if [ $? -eq 0 ]
+                then
+                    echo -e "\e[01;33m${QUEUEID}\e[00m:\e[01;32myes\e[00m"
+                    FOUND=$(($FOUND+1))
+                    if [ $FLAGDEL -eq 1 ]
+                    then
+                        $POSTSUPER -d ${QUEUEID}
+                    fi
+                else
+                    echo -e "\e[01;33m${QUEUEID}\e[00m:\e[01;31mno\e[00m"
+                fi
+            fi
+        done
+    done
+    echo -e "-----\n\e[01;32m$FOUND\e[00m file(s) matched!"
+
 }

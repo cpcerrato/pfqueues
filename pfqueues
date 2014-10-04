@@ -25,32 +25,52 @@ POSTCAT=/usr/sbin/postcat
 POSTSUPER=/usr/sbin/postsuper
 SPOOLDIR=/var/spool/postfix
 
-function load_deferred()
-{
+
+function usage() {
+    cat << EOF
+${0##*/} [-h] [-l] [-c] [-v QUEUEID] [-p PATTERN] [-d]
+    -h        Display this message.
+    -l        List sumary from all queues.
+    -c        Count all messages group by subject.
+    -p        Specify the pattern to search for.
+    -d        Actually remove files not yank them, no -p will delete all the messages!
+EOF
+}
+
+function load_deferred() {
     find ${SPOOLDIR}/deferred -type f
 }
 
-function load_active()
-{
+function load_active() {
     find ${SPOOLDIR}/active -type f
 }
 
-function load_incoming()
-{
+function load_incoming() {
     find ${SPOOLDIR}/incoming -type f
 }
 
-function load_inbound()
-{
+function load_inbound() {
     find ${SPOOLDIR}/maildrop -type f
 }
 
-function load_hold()
-{
+function load_hold() {
     find ${SPOOLDIR}/hold -type f
 }
 
-function load_corrupt()
-{
+function load_corrupt() {
     find ${SPOOLDIR}/corrupt -type f
 }
+
+function read_queue() {
+    $POSTCAT $1
+}
+
+function get_queueid() {
+    basename "$1"
+}
+
+function get_queue_file() {
+    find ${SPOOLDIR} -type f -not -path "*defer/*" -name $1
+}
+
+

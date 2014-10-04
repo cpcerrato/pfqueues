@@ -73,4 +73,16 @@ function get_queue_file() {
     find ${SPOOLDIR} -type f -not -path "*defer/*" -name $1
 }
 
+function get_subject() {
+    $POSTCAT -h $1|grep "^Subject"|head -n1
+}
 
+function get_all_subjects()
+{
+    for load_queues in $(load_deferred) $(load_inbound) $(load_hold) $(load_corrupt) $(load_active) $(load_incoming);do
+        for mail in $load_queues
+        do
+            test -f $mail && get_subject  $mail
+        done
+    done
+}

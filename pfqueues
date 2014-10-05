@@ -21,9 +21,10 @@
 
 # Define paths to binariess and queue directory:
 
-POSTCAT=/usr/sbin/postcat
-POSTSUPER=/usr/sbin/postsuper
-SPOOLDIR=/var/spool/postfix
+POSTCAT=""
+POSTSUPER=""
+POSTCONF=""
+SPOOLDIR=""
 
 
 function usage() {
@@ -35,6 +36,37 @@ ${0##*/} [-h] [-l] [-c] [-v QUEUEID] [-p PATTERN] [-d]
     -p        Specify the pattern to search for.
     -d        Actually remove files not yank them, no -p will delete all the messages!
 EOF
+}
+
+function check_paths() {
+    test -z ${POSTCAT} && POSTCAT=$(type -P postcat)
+    test -z ${POSTSUPER} && POSTSUPER=$(type -P postsuper)
+    test -z ${POSTCONF} && POSTCONF=$(type -P postconf)
+    test -z ${SPOOLDIR} && test -x ${POSTCONF} && SPOOLDIR=$(${POSTCONF} -h queue_directory)
+
+    if [ ! -x ${POSTCAT} ]
+    then
+        echo -e "Command postcat not found. You must set at top of this script."
+        exit 1
+    fi
+
+    if [ ! -x ${POSTSUPER} ]
+    then
+        echo -e "Command  postsuper not found. You must set at top of this script."
+        exit 1
+    fi
+
+    if [ ! -x ${POSTCONF} ]
+    then
+        echo -e "Command  postsuper not found. You must set at top of this script."
+        exit 1
+    fi
+
+    if [ ! -d ${SPOOLDIR} ]
+    then
+        echo -e "Queue directory not exist. Check your postfix configuration"
+        exit 1
+    fi
 }
 
 function load_deferred() {
@@ -175,6 +207,7 @@ function main() {
         usage
         exit 0
     fi
+    check_paths
     get_args "$@"
     if [ -n "${PATTERN}" ]
     then

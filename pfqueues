@@ -35,6 +35,7 @@ ${0##*/} [-h] [-l] [-c] [-v QUEUEID] [-p PATTERN] [-d]
     -c        Count all messages group by subject.
     -p        Specify the pattern to search for.
     -d        Actually remove files not yank them, no -p will delete all the messages!
+    -q        Quiet. Does not display individual queues when search pattern. Faster.
 EOF
 }
 
@@ -146,7 +147,7 @@ function search_pattern_queue() {
             then
                 QUEUEID=$(get_queueid $mail)
                 read_queue  $mail|grep -m 1 -qe "${PATTERN}"
-                if [ $? -eq 0 ]
+                if [[ $? -eq 0 ]] && [[ ${QUIET} -eq 0 ]]
                 then
                     echo -e "\e[01;33m${QUEUEID}\e[00m:\e[01;32myes\e[00m"
                     FOUND=$(($FOUND+1))
@@ -155,7 +156,10 @@ function search_pattern_queue() {
                         $POSTSUPER -d ${QUEUEID}
                     fi
                 else
-                    echo -e "\e[01;33m${QUEUEID}\e[00m:\e[01;31mno\e[00m"
+                    if [ ${QUIET} -eq 0 ]
+                    then
+                        echo -e "\e[01;33m${QUEUEID}\e[00m:\e[01;31mno\e[00m"
+                    fi
                 fi
             fi
         done
@@ -192,6 +196,9 @@ function get_args() {
                 read_queue $(get_queue_file ${OPTARG})
                 exit 0
                 ;;
+            q)
+                QUIET=1
+                ;;
            h|?|*)
                 usage
                 exit 0
@@ -202,6 +209,7 @@ function get_args() {
 
 function main() {
     FLAGDEL=0
+    QUIET=0
     if [ "$#" -eq 0 ]
     then
         usage

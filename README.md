@@ -1,7 +1,7 @@
 Description
 ================
 
-This script takes manage postfix queues. You could search pattern, delete match result, list all queues and count messages group by subject. 
+This script manage postfix queues. You could search pattern, delete match result, list all queues and count messages group by subject. 
 
 **WARNING**: Use this script at your own risk. When you delete queue, the email asociated is erased from disk, so you can not reverse the process. You must be superuser to use this script, if you don't, it will fail.
 
